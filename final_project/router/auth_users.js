@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 let books = require("./booksdb.js");
 const regd_users = express.Router();
 
-let users = [];
+let users = []; // Ensure this matches the array used in general.js for registration
 
 const isValid = (username) => {
     let userswithsamename = users.filter((user) => {
@@ -25,7 +25,7 @@ regd_users.post("/login", (req, res) => {
     const password = req.body.password;
 
     if (!username || !password) {
-        return res.status(404).json({ message: "Error logging in" });
+        return res.status(400).json({ message: "Username and password are required" });
     }
 
     if (authenticatedUser(username, password)) {
@@ -42,6 +42,8 @@ regd_users.post("/login", (req, res) => {
     }
 });
 
+
+
 // Task 8: Add or modify a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
     const isbn = req.params.isbn;
@@ -50,6 +52,7 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
 
     if (books[isbn]) {
         books[isbn].reviews[username] = review;
+        // Using return to avoid header issues
         return res.status(200).send(`The review for the book with ISBN ${isbn} has been added/updated.`);
     } else {
         return res.status(404).json({ message: "Book not found" });
@@ -65,7 +68,8 @@ regd_users.delete("/auth/review/:isbn", (req, res) => {
         let book = books[isbn];
         if (book.reviews[username]) {
             delete book.reviews[username];
-            return res.status(200).send(`Reviews for the ISBN ${isbn} posted by the user ${username} deleted.`);
+            // Matches the exact message required for the "deletereview" cURL output
+            return res.status(200).json({message: `Review for ISBN ${isbn} deleted`});
         } else {
             return res.status(404).json({message: "No review found for this user to delete."});
         }
@@ -73,6 +77,8 @@ regd_users.delete("/auth/review/:isbn", (req, res) => {
         return res.status(404).json({message: "Book not found."});
     }
 });
+
+
 
 module.exports.authenticated = regd_users;
 module.exports.isValid = isValid;
