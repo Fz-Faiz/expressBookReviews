@@ -4,24 +4,22 @@ let books = require("./booksdb.js");
 const regd_users = express.Router();
 
 let users = [];
+
 const isValid = (username) => {
-    // Check if the username already exists in the users array
     let userswithsamename = users.filter((user) => {
         return user.username === username;
     });
-    // Return true if the username is unique (not found)
     return userswithsamename.length === 0;
 }
 
 const authenticatedUser = (username, password) => {
-    // Check if username and password match a record in the users array
     let validusers = users.filter((user) => {
         return (user.username === username && user.password === password);
     });
     return validusers.length > 0;
 }
 
-// Only registered users can login
+// Task 7: Login
 regd_users.post("/login", (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
@@ -31,12 +29,10 @@ regd_users.post("/login", (req, res) => {
     }
 
     if (authenticatedUser(username, password)) {
-        // Generate JWT Access Token
         let accessToken = jwt.sign({
             data: password
         }, 'access', { expiresIn: 60 * 60 });
 
-        // Store Access Token in session
         req.session.authorization = {
             accessToken, username
         }
@@ -46,8 +42,21 @@ regd_users.post("/login", (req, res) => {
     }
 });
 
-// Add a book review
-// Delete a book review
+// Task 8: Add or modify a book review
+regd_users.put("/auth/review/:isbn", (req, res) => {
+    const isbn = req.params.isbn;
+    const review = req.query.review;
+    const username = req.session.authorization['username'];
+
+    if (books[isbn]) {
+        books[isbn].reviews[username] = review;
+        return res.status(200).send(`The review for the book with ISBN ${isbn} has been added/updated.`);
+    } else {
+        return res.status(404).json({ message: "Book not found" });
+    }
+});
+
+// Task 9: Delete a book review
 regd_users.delete("/auth/review/:isbn", (req, res) => {
     const isbn = req.params.isbn;
     const username = req.session.authorization['username'];
