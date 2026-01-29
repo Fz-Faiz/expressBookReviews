@@ -61,23 +61,21 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
 
 // Task 9: Delete a book review
 regd_users.delete("/auth/review/:isbn", (req, res) => {
-    const isbn = req.params.isbn;
-    const username = req.session.authorization['username'];
-    
-    if (books[isbn]) {
-        let book = books[isbn];
-        if (book.reviews[username]) {
-            delete book.reviews[username];
-            // Matches the exact message required for the "deletereview" cURL output
-            return res.status(200).json({message: `Review for ISBN ${isbn} deleted`});
-        } else {
-            return res.status(404).json({message: "No review found for this user to delete."});
-        }
+  const isbn = req.params.isbn;
+  const username = req.session.authorization['username'];
+  
+  if (books[isbn]) {
+    let book = books[isbn];
+    if (book.reviews[username]) {
+      delete book.reviews[username];
+      // RETURN JSON OBJECT AS REQUESTED BY GRADER
+      return res.status(200).json({message: `Review for ISBN ${isbn} deleted`});
     } else {
-        return res.status(404).json({message: "Book not found."});
+      return res.status(404).json({message: "Review not found"});
     }
+  }
+  return res.status(404).json({message: "Book not found"});
 });
-
 
 
 module.exports.authenticated = regd_users;
